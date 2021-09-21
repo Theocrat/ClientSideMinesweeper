@@ -1,0 +1,78 @@
+.menu_button {
+    background-color: #3f9c5c; /* Green */
+    border: none;
+    border-radius: 40px;
+    color: white;
+    width: 300px;
+    height: 80px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 32px;
+  }
+
+  .menu_button:hover {
+    background-color: #4fac6c; /* Green */
+  }
+
+.menu_button:active {
+    background-color: #6fcc8c; /* Green */
+  }
+
+.centered_table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.menu_header {
+    font-size: 48px;
+    text-align: center;
+    display: inline-block;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.gameboard_square {
+    background-color: #3f5c9c; /* Blue */
+    border: none;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    color:#000000;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+}
+
+.gameboard_square:hover {
+    background-color: #4f6cac; /* Blue */
+}
+
+.gameboard_square:active {
+    background-color: #6f8ccc; /* Blue */
+}
+
+.side_button {
+    background-color: #3f9c5c; /* Green */
+    border: none;
+    border-radius: 87px;
+    color: white;
+    width: 200px;
+    height: 40px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  }
+
+  .side_button:hover {
+    background-color: #4fac6c; /* Green */
+  }
+
+.side_button:active {
+    background-color: #6fcc8c; /* Green */
+  }
+
+body {
+  text-align: center;
+}

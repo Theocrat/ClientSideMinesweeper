@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+
+cat src/html/head.html > ./minesweeper.html
+
+for file in $(ls src/js/)
+do
+    cat src/js/$file >> ./minesweeper.html
+done
+
+echo \</script\> >> ./minesweeper.html
+echo >> ./minesweeper.html
+echo \<style\> >> ./minesweeper.html
+
+for file in $(ls src/css/)
+do
+    cat src/css/$file >> ./minesweeper.html
+done
+
+echo \</style\> >> ./minesweeper.html
+echo \</head\> >> ./minesweeper.html
+echo \<body\> >> ./minesweeper.html
+
+cat src/html/body.html >> ./minesweeper.html
+
+echo \</body\> >> ./minesweeper.html
+echo >> ./minesweeper.html
+echo \</html\> >> ./minesweeper.html
+
+if [ $# == "1" ]
+then
+    if [ $1 == "test" ]
+    then
+        xdg-open ./minesweeper.html
+    fi
+
+    if [ $1 == "clean" ]
+    then
+        rm ./minesweeper.html
+    fi
+fi

@@ -1,0 +1,34 @@
+<span style="align-self: center;">
+    <table id="menu_table" class="centered_table">
+        <tr><td> <span class="menu_header">MINESWEEPER</span> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('easy')"> EASY </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('medium')"> MEDIUM </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('hard')"> HARD </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="window.close()"> EXIT </button> </td></tr>
+    </table>
+</span>
+
+<table id="gamearea" hidden class="centered_table">
+    <tr>
+        <td>
+            <table id="gameboard"></table>
+        </td>
+        <td>
+            <p style="width:200px">Click to mark a cell as bomb, or double-click to reveal it.</p>
+            <p><button class="side_button" onclick="show_menu()"> QUIT </button></p>
+            <table>
+                <tr>
+                    <td>Total bombs:</td>
+                    <td id="total_bombs"></td>
+                </tr>
+                <tr>
+                    <td>Bombs marked:</td>
+                    <td id="bombs_marked"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td><h1 id="result"></h1></td>
+    </tr>
+</table>
