@@ -1,0 +1,431 @@
+<!-- This is simply a sample of the way the minesweeper.html file works. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+
+    <script type="text/javascript">const gameTimer = {
+    'time': 0,
+    'enabled': false,
+
+    //Methods
+
+    'start': () => {
+        gameTimer.time = 0;
+        gameTimer.enabled = true;
+        setTimeout(gameTimer.second, 1000)
+        document.getElementById('timer').innerHTML = gameTimer.timestr();
+    },
+
+    'halt': () => {
+        gameTimer.enabled = false;
+    },
+
+    'second': () => {
+        if (gameTimer.enabled) {
+            gameTimer.time += 1;
+            setTimeout(gameTimer.second, 1000);
+        }
+
+        document.getElementById('timer').innerHTML = gameTimer.timestr();
+    },
+
+    'timestr': () => {
+        let hrs, min, sec;
+        sec = gameTimer.time;
+
+        min = Math.floor(sec / 60);
+        sec %= 60;
+        if(sec < 10)
+            sec = `0${sec}`;
+
+        hrs = Math.floor(min / 60);
+        min %= 60;
+        if(min < 10)
+            min = `0${min}`;
+
+        let strformat;
+        if (hrs === 0)
+            strformat = `${min}:${sec}`;
+        else {
+            if(hrs < 10)
+                hrs = `0${sec}`;
+            strformat = `${hrs}:${min}:${sec}`;
+        }
+
+        return strformat;
+    }
+};
+const gameBoard = {
+    'data': [],
+    'rows': 0,
+    'cols': 0,
+    'bomb': 0,
+    'mark': 0,
+    'hidden': 0,
+
+    // Methods
+
+    'initialize': (nrows, ncols, nbomb) => {
+        gameBoard.rows = nrows;
+        gameBoard.cols = ncols;
+        gameBoard.bomb = nbomb;
+        gameBoard.mark = 0;
+        gameBoard.hidden = (nrows * ncols) - nbomb;
+
+        for (let i = 0; i < (nrows * ncols); i++)
+            gameBoard.data.push({
+                'state': 'hidden',
+                'bomb': false
+            })
+
+        let bomb_count = nbomb;
+        while (bomb_count > 0) {
+            let pos = Math.floor(Math.random() * nrows * ncols);
+            if (gameBoard.data[pos].bomb)
+                continue;
+            else {
+                bomb_count -= 1;
+                gameBoard.data[pos].bomb = true;
+            }
+        }
+    },
+
+    'render': () => {
+        let gb = document.getElementById('gameboard');
+        for (let i = 0; i < gameBoard.rows; i++) {
+            let row_html = '<tr>';
+            for (let j = 0; j < gameBoard.cols; j++) {
+                row_html += `<td> <button id="square_${gameBoard.pos(i, j)}" class="gameboard_square" onclick="mark(${i},${j})" ondblclick="reveal(${i},${j})"> </button> </td>`;
+            }
+            row_html += '</tr>'
+            gb.innerHTML += row_html;
+        }
+    },
+
+    'reset': () => {
+        gameBoard.data = [];
+        gameBoard.rows = 0;
+        gameBoard.cols = 0;
+        gameBoard.bomb = 0;
+        gameBoard.mark = 0;
+        gameBoard.hidden = 0;
+        document.getElementById('gameboard').innerHTML = ''
+    },
+
+    'pos': (row, col) => {
+        let pos = row * gameBoard.cols;
+        pos += col;
+        return pos;
+    }
+};
+
+function reveal(row, col) {
+    if (row >= gameBoard.rows || row < 0) {
+        console.log('TAMPERING DETECTED - index out of bounds for reveal function row');
+        return;
+    }
+
+    if (col >= gameBoard.rows || col < 0) {
+        console.log('TAMPERING DETECTED - index out of bounds for reveal function col');
+        return;
+    }
+
+    let pos = gameBoard.pos(row, col);
+    if (gameBoard.data[pos].state == 'revealed')
+        return;
+
+
+    document.getElementById(`square_${pos}`).innerHTML = '';
+    if (gameBoard.data[pos].state == 'hidden' || gameBoard.data[pos].state == 'marked') {
+        if (gameBoard.data[pos].state == 'marked')
+            mark(row, col); // for unmarking (to keep count of marked cells)
+        gameBoard.hidden -= 1;
+        if (gameBoard.data[pos].bomb) {
+            document.getElementById(`square_${pos}`).style.backgroundColor = '#8d3030';
+            for (let I = 0; I < gameBoard.rows; I++) {
+                for (let J = 0; J < gameBoard.cols; J++) {
+                    let l = gameBoard.pos(I, J);
+                    if (gameBoard.data[l].state == 'hidden' && gameBoard.data[l].bomb == false)
+                        document.getElementById(`square_${l}`).style.backgroundColor = '#e390a0';
+                    let neighbour_bombs = 0;
+                    for (let i = -1; i <= 1; i++) {
+                        if (I + i < 0 || I + i >= gameBoard.rows)
+                            continue;
+                        else {
+                            for (let j = -1; j <= 1; j++) {
+                                if (J + j < 0 || J + j >= gameBoard.cols)
+                                    continue;
+                                else {
+                                    if (gameBoard.data[gameBoard.pos(I + i, J + j)].bomb)
+                                        neighbour_bombs += 1;
+                                }
+                            }
+                        }
+                    }
+                    if (neighbour_bombs > 0 && gameBoard.data[l].bomb == false)
+                        document.getElementById(`square_${l}`).innerHTML = `${neighbour_bombs}`;
+                    if (gameBoard.data[l].state == 'hidden' && gameBoard.data[l].bomb == true)
+                        document.getElementById(`square_${l}`).style.backgroundColor = '#8d3030';
+                    gameBoard.data[l].state = 'revealed';
+                }
+            }
+            youLose();
+        }
+        else {
+            gameBoard.data[pos].state = 'revealed';
+            document.getElementById(`square_${pos}`).style.backgroundColor = '#c0c0c0';
+            document.getElementById(`square_${pos}`).style.color = '#000000';
+            let neighbour_bombs = 0;
+            for (let i = -1; i <= 1; i++) {
+                if (row + i < 0 || row + i >= gameBoard.rows)
+                    continue;
+                else {
+                    for (let j = -1; j <= 1; j++) {
+                        if (col + j < 0 || col + j >= gameBoard.cols)
+                            continue;
+                        else {
+                            if (gameBoard.data[gameBoard.pos(row + i, col + j)].bomb)
+                                neighbour_bombs += 1;
+                        }
+                    }
+                }
+            }
+            if (neighbour_bombs > 0)
+                document.getElementById(`square_${pos}`).innerHTML = `${neighbour_bombs}`;
+            else {
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if ((gameBoard.data[gameBoard.pos(row + i, col + j)] != undefined) && (gameBoard.data[gameBoard.pos(row + i, col + j)].state == 'hidden' || gameBoard.data[gameBoard.pos(row + i, col + j)].state == 'marked'))
+                            reveal(row + i, col + j);
+                    }
+                }
+            }
+        }
+    }
+    else if (gameBoard.data[pos].state == 'revealed' && document.getElementById(`square_${pos}`).innerHTML) {
+        for(let i = -1; i <= 1; i++) {
+            for(let j = -1; j <= 1; j++) {
+                if(i != j)
+                    reveal(row + i, col + j);
+            }
+        }
+    }
+
+    gameBoard.data[pos].state = 'revealed';
+    if (gameBoard.hidden == 0)
+        youWin();
+}
+
+function mark(row, col) {
+    if (row >= gameBoard.rows || row < 0) {
+        console.log('TAMPERING DETECTED - index out of bounds for reveal function row');
+        return;
+    }
+
+    if (col >= gameBoard.rows || col < 0) {
+        console.log('TAMPERING DETECTED - index out of bounds for reveal function col');
+        return;
+    }
+
+    let pos = gameBoard.pos(row, col);
+    if (gameBoard.data[pos].state == 'hidden') {
+        document.getElementById(`square_${pos}`).style.color = '#ffffff';
+        document.getElementById(`square_${pos}`).innerHTML = 'X';
+        gameBoard.data[pos].state = 'marked';
+        gameBoard.mark += 1;
+    }
+    else if (gameBoard.data[pos].state == 'marked') {
+        document.getElementById(`square_${pos}`).style.color = '#ffffff';
+        document.getElementById(`square_${pos}`).innerHTML = '';
+        gameBoard.data[pos].state = 'hidden';
+        gameBoard.mark -= 1;
+    }
+
+    document.getElementById('bombs_marked').innerHTML = gameBoard.mark;
+}
+function youWin() {
+    document.getElementById('result').innerHTML = 'YOU WIN !!'
+    document.getElementById('result').style.color = '#288028'
+    for(let row = 0; row < gameBoard.rows; row++) {
+        for(let col = 0; col < gameBoard.cols; col++) {
+            let pos = gameBoard.pos(row, col);
+            if(gameBoard.data[pos].state == 'revealed')
+                document.getElementById(`square_${pos}`).style.backgroundColor = '#b0e0b0';
+            else
+                document.getElementById(`square_${pos}`).style.backgroundColor = '#206020';
+        }
+    }
+    gameTimer.halt();
+    endTime = document.getElementById('timer').innerHTML;
+    document.getElementById('timer').innerHTML = `<b>${endTime}</b>`;
+    document.getElementById('timer').style.color = '#007700';
+    document.getElementById('side_button').innerHTML = 'RESTART';
+}
+
+function youLose() {
+    document.getElementById('result').innerHTML = 'YOU LOSE !!'
+    document.getElementById('result').style.color = '#802828'
+    gameTimer.halt();
+    document.getElementById('side_button').innerHTML = 'RESTART';
+}
+function begin_game(mode) {
+    document.getElementById('menu_table').hidden = true;
+
+    switch (mode) {
+        case 'easy':
+            gameBoard.initialize(10, 10, 10);
+            break;
+        case 'medium':
+            gameBoard.initialize(20, 15, 30);
+            break;
+        case 'hard':
+            gameBoard.initialize(20, 30, 70);
+            break;
+    }
+
+    gameTimer.start();
+
+    gameBoard.render();
+    document.getElementById('gamearea').hidden = false;
+    document.getElementById('total_bombs').innerHTML = gameBoard.bomb;
+    document.getElementById('bombs_marked').innerHTML = gameBoard.mark;
+    document.getElementById('side_button').innerHTML = 'QUIT';
+}
+
+function show_menu() {
+    document.getElementById('gamearea').hidden = true;
+    document.getElementById('menu_table').hidden = false;
+    document.getElementById('result').innerHTML = '';
+    gameBoard.reset();
+}
+</script>
+
+<style>
+.menu_button {
+    background-color: #3f9c5c; /* Green */
+    border: none;
+    border-radius: 40px;
+    color: white;
+    width: 300px;
+    height: 80px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 32px;
+  }
+
+  .menu_button:hover {
+    background-color: #4fac6c; /* Green */
+  }
+
+.menu_button:active {
+    background-color: #6fcc8c; /* Green */
+  }
+
+.centered_table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.menu_header {
+    font-size: 48px;
+    text-align: center;
+    display: inline-block;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.gameboard_square {
+    background-color: #3f5c9c; /* Blue */
+    border: none;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    color:#000000;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+}
+
+.gameboard_square:hover {
+    background-color: #4f6cac; /* Blue */
+}
+
+.gameboard_square:active {
+    background-color: #6f8ccc; /* Blue */
+}
+
+.side_button {
+    background-color: #3f9c5c; /* Green */
+    border: none;
+    border-radius: 87px;
+    color: white;
+    width: 200px;
+    height: 40px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  }
+
+  .side_button:hover {
+    background-color: #4fac6c; /* Green */
+  }
+
+.side_button:active {
+    background-color: #6fcc8c; /* Green */
+  }
+
+body {
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<span style="align-self: center;">
+    <table id="menu_table" class="centered_table">
+        <tr><td> <span class="menu_header">MINESWEEPER</span> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('easy')"> EASY </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('medium')"> MEDIUM </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="begin_game('hard')"> HARD </button> </td></tr>
+        <tr><td> <button class="menu_button" onclick="window.close()"> EXIT </button> </td></tr>
+    </table>
+</span>
+
+<table id="gamearea" hidden class="centered_table">
+    <tr>
+        <td>
+            <table id="gameboard"></table>
+        </td>
+        <td>
+            <p style="width:200px">Click to mark a cell as bomb, or double-click to reveal it.</p>
+            <p><button id="side_button" class="side_button" onclick="show_menu()"> QUIT </button></p>
+            <table>
+                <tr>
+                    <td>Total bombs:</td>
+                    <td id="total_bombs"></td>
+                </tr>
+                <tr>
+                    <td>Bombs marked:</td>
+                    <td id="bombs_marked"></td>
+                </tr>
+
+                <tr>
+                    <td>Game time:</td>
+                    <td id="timer"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td><h1 id="result"></h1></td>
+    </tr>
+</table>
+</body>
+
+</html>
