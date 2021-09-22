@@ -15,7 +15,7 @@
         </td>
         <td>
             <p style="width:200px">Click to mark a cell as bomb, or double-click to reveal it.</p>
-            <p><button class="side_button" onclick="show_menu()"> QUIT </button></p>
+            <p><button id="side_button" class="side_button" onclick="show_menu()"> QUIT </button></p>
             <table>
                 <tr>
                     <td>Total bombs:</td>
@@ -24,6 +24,11 @@
                 <tr>
                     <td>Bombs marked:</td>
                     <td id="bombs_marked"></td>
+                </tr>
+
+                <tr>
+                    <td>Game time:</td>
+                    <td id="timer"></td>
                 </tr>
             </table>
         </td>
