@@ -4,7 +4,7 @@ function reveal(row, col) {
         return;
     }
 
-    if (col >= gameBoard.rows || col < 0) {
+    if (col >= gameBoard.cols || col < 0) {
         console.log('TAMPERING DETECTED - index out of bounds for reveal function col');
         return;
     }
@@ -16,20 +16,28 @@ function reveal(row, col) {
 
     document.getElementById(`square_${pos}`).innerHTML = '';
     if (gameBoard.data[pos].state == 'hidden' || gameBoard.data[pos].state == 'marked') {
+        
         if (gameBoard.data[pos].state == 'marked')
             mark(row, col); // for unmarking (to keep count of marked cells)
+        
         gameBoard.hidden -= 1;
+        
         if (gameBoard.data[pos].bomb) {
             document.getElementById(`square_${pos}`).style.backgroundColor = '#8d3030';
+        
             for (let I = 0; I < gameBoard.rows; I++) {
                 for (let J = 0; J < gameBoard.cols; J++) {
                     let l = gameBoard.pos(I, J);
+        
                     if (gameBoard.data[l].state == 'hidden' && gameBoard.data[l].bomb == false)
                         document.getElementById(`square_${l}`).style.backgroundColor = '#e390a0';
+        
                     let neighbour_bombs = 0;
                     for (let i = -1; i <= 1; i++) {
+        
                         if (I + i < 0 || I + i >= gameBoard.rows)
                             continue;
+        
                         else {
                             for (let j = -1; j <= 1; j++) {
                                 if (J + j < 0 || J + j >= gameBoard.cols)
@@ -41,8 +49,10 @@ function reveal(row, col) {
                             }
                         }
                     }
+        
                     if (neighbour_bombs > 0 && gameBoard.data[l].bomb == false)
                         document.getElementById(`square_${l}`).innerHTML = `${neighbour_bombs}`;
+        
                     if (gameBoard.data[l].state == 'hidden' && gameBoard.data[l].bomb == true)
                         document.getElementById(`square_${l}`).style.backgroundColor = '#8d3030';
                     gameBoard.data[l].state = 'revealed';
